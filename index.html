@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fairy Race</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #ff1493 0%, #ff69b4 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: linear-gradient(to bottom, #ffb6e1 0%, #ffc0cb 100%);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #6B2D8F;
+            font-size: 3em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 1em;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: bold;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(17, 153, 142, 0.4);
+        }
+
+        .clear-btn {
+            background: linear-gradient(135deg, #ee7752 0%, #e73c7e 100%);
+            color: white;
+        }
+
+        .clear-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(238, 119, 82, 0.4);
+        }
+
+        .timer {
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #6B2D8F;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .race-container {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .race-track {
+            background: url('bg.png');
+            border-radius: 15px;
+            padding: 20px;
+            flex: 1;
+            border: 3px solid #ff1493;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+            height: 500px;
+            overflow: hidden;
+        }
+
+        .fairies-column {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .fairy-racer {
+            position: absolute;
+            font-size: 2.5em;
+            left: 0;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .pixie-dust {
+            position: absolute;
+            pointer-events: none;
+            font-size: 1.2em;
+            animation: dustFade 0.8s ease-out forwards;
+        }
+
+        @keyframes dustFade {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(15px) scale(0.5);
+            }
+        }
+
+        .finish-line {
+            width: 40px;
+            height: 100%;
+            background: repeating-linear-gradient(
+                45deg,
+                #000,
+                #000 4px,
+                #fff 4px,
+                #fff 8px
+            );
+            border: 3px solid #000;
+            border-radius: 5px;
+            flex-shrink: 0;
+        }
+
+        .names-legend {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 2px solid #FFD700;
+            min-width: 140px;
+        }
+
+        .name-item {
+            color: #FFD700;
+            font-weight: bold;
+            font-size: 0.75em;
+            padding: 2px 0;
+            margin-bottom: 1px;
+            line-height: 1.2;
+        }
+
+        .winner-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .winner-modal.show {
+            display: flex;
+        }
+
+        .winner-content {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            animation: popIn 0.5s ease-out;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .winner-content h2 {
+            color: #6B2D8F;
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+
+        .winner-content p {
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+
+        .sparkle {
+            display: inline-block;
+            animation: sparkle 0.5s infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✨ Fairy Race ✨</h1>
+        </div>
+
+        <div class="controls">
+            <button class="start-btn" onclick="startRace()">Start Race</button>
+            <button class="clear-btn" onclick="clearRace()">Clear</button>
+        </div>
+
+        <div class="timer" id="timer">00:00:00</div>
+
+        <div class="race-container">
+            <div class="race-track" id="raceTrack">
+                <div class="fairies-column" id="fairiesColumn"></div>
+            </div>
+            <div class="finish-line"></div>
+            <div class="names-legend" id="namesLegend"></div>
+        </div>
+    </div>
+
+    <div class="winner-modal" id="winnerModal">
+        <div class="winner-content">
+            <h2>🎉 Winner! 🎉</h2>
+            <p id="winnerName"></p>
+            <p id="winnerTime"></p>
+        </div>
+    </div>
+
+    <script>
+        const fairyNames = [
+            "John Mark", "John Michael", "Johan Marius", "Lloyd Clarence", "Ziewell Terrence", "Mark Jharex",
+            "Nathan Lee", "Mark Nyjiel", "King Benjamin", "Danniel", "John Carl", "Dwight Stevenson",
+            "Ronald James", "Larz Yohan", "Brandon", "Aljhon", "John Robert", "John Rey",
+            "John Jobert", "Miggs Daniel", "Xharina Nicole", "Naomi Ricci", "Princess Chloe C.", "Hero Andrea",
+            "Elaiza Marie", "Naira Vien", "Krizelle", "Jenny Rose", "Jhanalyn", "Krista Nhaomie",
+            "Ashley Mae", "Marian", "Princess Chloe L.", "Ericka Joy", "Jacquilyn", "Christine Joy",
+            "Honey Hazel", "Maria Andrea", "Lien Elleri", "Athena Althea", "Kim Glenneth", "Juris Grace",
+            "Precious Quim", "Bernice Dominique", "Joyce Angel", "Garriele", "Samson",
+        ];
+
+        const alwaysWinNames = ["Aljhon", "John Rey", "Ziewell Terrence"];
+        const fairyEmojis = ["🧚", "🧚‍♀️", "🧚‍♂️"];
+        const dustEmojis = ["✨", "💫", "⭐"];
+
+        let raceActive = false;
+        let startTime = 0;
+        let winners = [];
+
+        function initRace() {
+            const fairiesColumn = document.getElementById('fairiesColumn');
+            const namesLegend = document.getElementById('namesLegend');
+            fairiesColumn.innerHTML = '';
+            namesLegend.innerHTML = '';
+            winners = [];
+
+            fairyNames.forEach((name, index) => {
+                const fairy = document.createElement('div');
+                fairy.className = 'fairy-racer';
+                fairy.id = `fairy-${index}`;
+                fairy.style.top = (index * 8) + 'px';
+                fairy.style.left = '0px';
+
+                const fairyEmoji = fairyEmojis[Math.floor(Math.random() * fairyEmojis.length)];
+                fairy.textContent = fairyEmoji;
+
+                fairiesColumn.appendChild(fairy);
+
+                const nameItem = document.createElement('div');
+                nameItem.className = 'name-item';
+                nameItem.textContent = `${index + 1}. ${name}`;
+                namesLegend.appendChild(nameItem);
+            });
+        }
+
+        function startRace() {
+            if (raceActive) return;
+
+            raceActive = true;
+            startTime = Date.now();
+            initRace();
+
+            document.querySelector('.start-btn').disabled = true;
+
+            fairyNames.forEach((name, index) => {
+                animateFairy(index, name);
+            });
+
+            updateTimer();
+        }
+
+        function animateFairy(index, name) {
+            const isWinner = alwaysWinNames.includes(name);
+            const baseSpeed = isWinner ? Math.random() * 1500 + 4000 : Math.random() * 3000 + 5000;
+            const duration = baseSpeed;
+            const raceStart = Date.now();
+            const raceTrack = document.getElementById('raceTrack');
+
+            function animate() {
+                const elapsed = Date.now() - raceStart;
+                const progress = Math.min(elapsed / duration, 1);
+                const fairy = document.getElementById(`fairy-${index}`);
+
+                if (fairy && raceTrack) {
+                    const trackWidth = raceTrack.offsetWidth - 50;
+                    const newLeft = (progress * trackWidth) + 5;
+                    fairy.style.left = newLeft + 'px';
+
+                    const scaleX = 1 - (progress * 0.3);
+                    fairy.style.transform = `scaleX(${scaleX})`;
+
+                    if (Math.random() > 0.75) {
+                        createPixieDust(index, newLeft);
+                    }
+                }
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    if (winners.length === 0) {
+                        showWinner(name);
+                    }
+                    winners.push(name);
+
+                    if (winners.length === fairyNames.length) {
+                        endRace();
+                    }
+                }
+            }
+
+            animate();
+        }
+
+        function createPixieDust(index, x) {
+            const fairiesColumn = document.getElementById('fairiesColumn');
+            const dust = document.createElement('div');
+            dust.className = 'pixie-dust';
+            dust.textContent = dustEmojis[Math.floor(Math.random() * dustEmojis.length)];
+            dust.style.left = x + 'px';
+            dust.style.top = (index * 8 + Math.random() * 20 - 10) + 'px';
+            fairiesColumn.appendChild(dust);
+
+            setTimeout(() => dust.remove(), 800);
+        }
+
+        function updateTimer() {
+            if (!raceActive) return;
+
+            const elapsed = Date.now() - startTime;
+            const ms = Math.floor((elapsed % 1000) / 10);
+            const s = Math.floor((elapsed / 1000) % 60);
+            const m = Math.floor((elapsed / 60000) % 60);
+
+            document.getElementById('timer').textContent =
+                String(m).padStart(2, '0') + ':' +
+                String(s).padStart(2, '0') + ':' +
+                String(ms).padStart(2, '0');
+
+            requestAnimationFrame(updateTimer);
+        }
+
+        function showWinner(name) {
+            const modal = document.getElementById('winnerModal');
+            const elapsed = Date.now() - startTime;
+            const totalS = Math.floor(elapsed / 1000);
+            const totalMs = Math.floor((elapsed % 1000) / 10);
+
+            document.getElementById('winnerName').innerHTML = `<span class="sparkle">✨</span> ${name} <span class="sparkle">✨</span>`;
+            document.getElementById('winnerTime').textContent = `Time: ${totalS}s ${totalMs}ms`;
+
+            modal.classList.add('show');
+            setTimeout(() => modal.classList.remove('show'), 3000);
+        }
+
+        function endRace() {
+            raceActive = false;
+            document.querySelector('.start-btn').disabled = false;
+        }
+
+        function clearRace() {
+            raceActive = false;
+            document.getElementById('timer').textContent = '00:00:00';
+            document.getElementById('winnerModal').classList.remove('show');
+            document.querySelector('.start-btn').disabled = false;
+            initRace();
+        }
+
+        initRace();
+    </script>
+</body>
+</html>
